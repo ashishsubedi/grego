@@ -25,6 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 }
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -88,7 +89,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c":
+		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "down", "j":
 			m.index++
@@ -98,7 +99,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			m.index--
 			if m.index < 0 {
-
 				m.index = 0
 			}
 		case "s":
@@ -139,7 +139,7 @@ func adjustViewport(m *Model, msg tea.WindowSizeMsg) {
 }
 
 func (m *Model) footerView() string {
-	instructions := "\n↑,k: prev\t↓,j: next\ts: Toggle show/hide meaning\tr: Random Word"
+	instructions := "\n↑,k: prev\t↓,j: next\ts: Toggle show/hide meaning\tr: Random Word\tq: Quit"
 	stats := fmt.Sprintf("\nTotal Words: %d\tindex: %d", m.totalWords, m.index)
 
 	return lipgloss.NewStyle().Width(200).Border(lipgloss.Border{Top: lipgloss.NormalBorder().Top}).Render(lipgloss.JoinVertical(
@@ -148,6 +148,7 @@ func (m *Model) footerView() string {
 		stats,
 	))
 }
+
 func (m *Model) topSection() string {
 	wordSection := fmt.Sprintf("Word: %s", style.Render(m.words[m.index]))
 	meaningSection := "\n"
@@ -161,8 +162,8 @@ func (m *Model) topSection() string {
 		meaningSection,
 	)
 }
-func (m *Model) View() string {
 
+func (m *Model) View() string {
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		m.topSection(),
