@@ -142,11 +142,11 @@ func (m *Model) footerView() string {
 	instructions := "\n↑,k: prev\t↓,j: next\ts: Toggle show/hide meaning\tr: Random Word"
 	stats := fmt.Sprintf("\nTotal Words: %d\tindex: %d", m.totalWords, m.index)
 
-	return lipgloss.JoinVertical(
+	return lipgloss.NewStyle().Width(200).Border(lipgloss.Border{Top: lipgloss.NormalBorder().Top}).Render(lipgloss.JoinVertical(
 		lipgloss.Left,
 		instructions,
 		stats,
-	)
+	))
 }
 func (m *Model) topSection() string {
 	wordSection := fmt.Sprintf("Word: %s", style.Render(m.words[m.index]))
@@ -162,8 +162,6 @@ func (m *Model) topSection() string {
 	)
 }
 func (m *Model) View() string {
-
-	// bottomSection := fmt.Sprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
