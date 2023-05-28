@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -28,12 +31,36 @@ func check(e error) {
 	}
 }
 
+func getTerminalDimensions() (int, int, error) {
+	cmd := exec.Command("stty", "size")
+	cmd.Stdin = os.Stdin
+	out, err := cmd.Output()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	dimensions := strings.Split(strings.TrimSpace(string(out)), " ")
+	width, err := strconv.Atoi(dimensions[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	height, err := strconv.Atoi(dimensions[0])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return width, height, nil
+}
+
 type Model struct {
 	words       map[int]string
 	meanings    map[int]string
 	index       int
 	totalWords  int
 	showMeaning bool
+	viewport    viewport.Model
+	ready       bool
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -81,21 +108,67 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Update index to random value
 			m.index = rand.Intn(m.totalWords)
 		}
+	case tea.WindowSizeMsg:
+		adjustViewport(m, msg)
+
 	}
+
+	m.viewport, _ = m.viewport.Update(msg)
+
 	return m, nil
 }
 
-func (m *Model) View() string {
-	s := ""
-	s += "Word: "
-	s += style.Render(fmt.Sprintf("%s\n", m.words[m.index]))
+func adjustViewport(m *Model, msg tea.WindowSizeMsg) {
+	footerHeight := lipgloss.Height(m.footerView())
+	headerHeight := lipgloss.Height(m.topSection())
+	verticalMarginHeight := footerHeight + headerHeight
 
-	if m.showMeaning {
-		s += fmt.Sprintf("\nMeaning: %s\n", m.meanings[m.index])
+	if !m.ready {
+
+		m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+		m.viewport.YPosition = headerHeight
+		m.viewport.HighPerformanceRendering = false
+
+		m.ready = true
+
+		m.viewport.YPosition = headerHeight + 1
+	} else {
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height - verticalMarginHeight
 	}
-	s += fmt.Sprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n")
-	// Instruction and index count at end
-	s += fmt.Sprintf("\n↑,k: prev\t↓,j: next\ts: Toogle show/hide meaning\tr: Random Word")
-	s += fmt.Sprintf("\nTotal Words: %d\tindex: %d", m.totalWords, m.index)
-	return s
+}
+
+func (m *Model) footerView() string {
+	instructions := "\n↑,k: prev\t↓,j: next\ts: Toggle show/hide meaning\tr: Random Word"
+	stats := fmt.Sprintf("\nTotal Words: %d\tindex: %d", m.totalWords, m.index)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		instructions,
+		stats,
+	)
+}
+func (m *Model) topSection() string {
+	wordSection := fmt.Sprintf("Word: %s", style.Render(m.words[m.index]))
+	meaningSection := ""
+	if m.showMeaning {
+		meaningSection = fmt.Sprintf("Meaning: %s", m.meanings[m.index])
+	}
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		wordSection,
+		meaningSection,
+	)
+}
+func (m *Model) View() string {
+
+	// bottomSection := fmt.Sprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		m.topSection(),
+		m.viewport.View(),
+		m.footerView(),
+	)
 }
