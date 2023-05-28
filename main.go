@@ -15,9 +15,6 @@ var style = lipgloss.NewStyle().
 	Bold(true).
 	Foreground(lipgloss.Color("#00FF00"))
 
-var guideStype = lipgloss.NewStyle().
-	Underline(true)
-
 func main() {
 	err := tea.NewProgram(&Model{words: make(map[int]string), meanings: make(map[int]string)}, tea.WithAltScreen()).Start()
 	if err != nil {
