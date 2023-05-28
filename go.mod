@@ -1,4 +1,4 @@
-module grego
+module github.com/ashishsubedi/grego
 
 go 1.20
 
