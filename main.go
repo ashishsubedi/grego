@@ -150,9 +150,9 @@ func (m *Model) footerView() string {
 }
 func (m *Model) topSection() string {
 	wordSection := fmt.Sprintf("Word: %s", style.Render(m.words[m.index]))
-	meaningSection := ""
+	meaningSection := "\n"
 	if m.showMeaning {
-		meaningSection = fmt.Sprintf("Meaning: %s", m.meanings[m.index])
+		meaningSection = fmt.Sprintf("\nMeaning: %s", m.meanings[m.index])
 	}
 
 	return lipgloss.JoinVertical(
