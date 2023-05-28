@@ -2,6 +2,8 @@
 Grego is a CLI tool to help you prepare vocab for GRE. It is written in Go.
 Shows random words from vocab list.
 
+### Screenshot
+[[./assets/screenshot.png]]
 ### How to use
 
 > Supported on linux and mac
