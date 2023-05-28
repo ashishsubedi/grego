@@ -63,12 +63,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
-		case "up", "k":
+		case "down", "j":
 			m.index++
 			if m.index >= m.totalWords {
 				m.index = m.totalWords - 1
 			}
-		case "down", "j":
+		case "up", "k":
 			m.index--
 			if m.index < 0 {
 
@@ -95,7 +95,7 @@ func (m *Model) View() string {
 	}
 	s += fmt.Sprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n")
 	// Instruction and index count at end
-	s += fmt.Sprintf("\n↑,k: next\t↓,j: prev\ts: Toogle show/hide meaning\tr: Random Word")
+	s += fmt.Sprintf("\n↑,k: prev\t↓,j: next\ts: Toogle show/hide meaning\tr: Random Word")
 	s += fmt.Sprintf("\nTotal Words: %d\tindex: %d", m.totalWords, m.index)
 	return s
 }
